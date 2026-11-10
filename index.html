@@ -1,0 +1,251 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Simplifica Gov: inteligência artificial para tornar informações sobre serviços públicos mais fáceis de entender.">
+  <title>Simplifica Gov | Informação acessível</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f3f6fa;
+      color: #233044;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #123c69;
+      color: white;
+      padding: 22px 7%;
+    }
+
+    .brand {
+      font-size: 25px;
+      font-weight: bold;
+    }
+
+    .brand span {
+      color: #65d6c2;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 55px 20px 35px;
+    }
+
+    .hero h1 {
+      font-size: clamp(27px, 5vw, 40px);
+      color: #123c69;
+      margin-bottom: 15px;
+    }
+
+    .hero p {
+      max-width: 620px;
+      margin: auto;
+      line-height: 1.6;
+      color: #596579;
+    }
+
+    main {
+      width: min(90%, 760px);
+      margin: 0 auto 50px;
+    }
+
+    .panel {
+      background: white;
+      padding: 28px;
+      border-radius: 14px;
+      box-shadow: 0 5px 22px rgba(0,0,0,.06);
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 190px;
+      padding: 15px;
+      border: 1px solid #ccd5e0;
+      border-radius: 9px;
+      font: inherit;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    textarea:focus {
+      outline: 2px solid #287b91;
+      border-color: transparent;
+    }
+
+    .hint {
+      font-size: 13px;
+      color: #697587;
+      margin: 10px 0 18px;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 9px;
+      background: #123c69;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #205786;
+    }
+
+    button:disabled {
+      opacity: .6;
+      cursor: wait;
+    }
+
+    #status {
+      margin-top: 16px;
+      line-height: 1.5;
+      color: #596579;
+    }
+
+    #result {
+      display: none;
+      margin-top: 25px;
+      padding: 22px;
+      background: #edf7f5;
+      border-left: 4px solid #168b78;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      line-height: 1.7;
+      overflow-wrap: anywhere;
+    }
+
+    footer {
+      text-align: center;
+      padding: 25px;
+      color: #697587;
+      font-size: 13px;
+    }
+
+    @media (max-width: 480px) {
+      .panel {
+        padding: 20px;
+      }
+
+      .hero {
+        padding-top: 38px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="brand">Simplifica <span>Gov</span></div>
+  </header>
+
+  <section class="hero">
+    <h1>Entender seus direitos ficou mais simples.</h1>
+    <p>
+      Utilize inteligência artificial para transformar
+      informações sobre serviços públicos em explicações
+      claras, acessíveis e organizadas.
+    </p>
+  </section>
+
+  <main>
+    <section class="panel">
+      <label for="officialText">
+        Cole aqui o texto sobre o serviço público:
+      </label>
+
+      <textarea
+        id="officialText"
+        placeholder="Cole aqui as informações de uma página ou documento oficial..."
+        maxlength="10000"
+      ></textarea>
+
+      <p class="hint">
+        A ferramenta analisará o conteúdo fornecido.
+        Não insira dados pessoais ou informações sigilosas.
+      </p>
+
+      <button id="analyzeButton" type="button">
+        Simplificar informações
+      </button>
+
+      <p id="status" role="status" aria-live="polite"></p>
+
+      <div id="result" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <footer>
+    Simplifica Gov | Projeto experimental de inteligência artificial.
+    Sempre consulte os canais oficiais para confirmar informações.
+  </footer>
+
+  <script>
+    const textArea = document.getElementById("officialText");
+    const button = document.getElementById("analyzeButton");
+    const status = document.getElementById("status");
+    const result = document.getElementById("result");
+
+    button.addEventListener("click", async () => {
+      const officialText = textArea.value.trim();
+
+      if (officialText.length < 30) {
+        status.textContent =
+          "Cole um texto com pelo menos 30 caracteres.";
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = "Analisando...";
+      status.textContent = "Aguarde enquanto a IA analisa o conteúdo.";
+      result.style.display = "none";
+
+      try {
+        const response = await fetch("/api/explicar", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ text: officialText })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Não foi possível analisar o texto.");
+        }
+
+        result.textContent = data.answer;
+        result.style.display = "block";
+        status.textContent = "Análise concluída!";
+
+      } catch (error) {
+        status.textContent = error.message;
+      } finally {
+        button.disabled = false;
+        button.textContent = "Simplificar informações";
+      }
+    });
+  </script>
+
+</body>
+</html>
