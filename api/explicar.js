@@ -28,7 +28,8 @@ module.exports = async function handler(req, res) {
 
     // Envia o texto para a inteligência artificial
     const resposta = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent",
+
       {
         method: "POST",
         headers: {
